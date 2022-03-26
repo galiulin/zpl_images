@@ -2,6 +2,7 @@ package org.mdream.zpl;
 
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -20,8 +21,7 @@ public class MultiFileUploadController {
     @Path("/files")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response fileUpload(@MultipartForm MultipartFormDataInput
-                                       input) {
+    public Response fileUpload(@MultipartForm MultipartFormDataInput input) {
         return Response.ok().
                 entity(fileUploadService.uploadFile(input)).build();
     }

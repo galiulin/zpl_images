@@ -1,17 +1,14 @@
 package org.mdream.zpl;
 
-import org.apache.commons.io.IOUtils;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MultivaluedMap;
-import java.io.File;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +16,14 @@ import java.util.Map;
 @Singleton
 public class FileUploadService {
 
-    @ConfigProperty(name = "upload.directory")
-    String UPLOAD_DIR;
+    @Inject
+    CompressorRegistry registry;
+
+    @Inject
+    ZplImageUtils imageUtils;
 
     public String uploadFile(MultipartFormDataInput input) {
+        String result = "Files Successfully Uploaded";
         Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
         List<String> fileNames = new ArrayList<>();
         List<InputPart> inputParts = uploadForm.get("file");
@@ -34,25 +35,17 @@ public class FileUploadService {
                 fileName = getFileName(header);
                 fileNames.add(fileName);
                 InputStream inputStream = inputPart.getBody(InputStream.class, null);
-                writeFile(inputStream,fileName);
+//                writeFile(inputStream,fileName);
+                BufferedImage image = ImageIO.read(inputStream);
+                inputStream.close();
+                image = imageUtils.resizeImg(image, 500, 300);
+                image = imageUtils.toMonoAndInvertColour(image);
+                result = registry.compress(CompressorType.Z64, image);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return "Files Successfully Uploaded";
-    }
-
-    private void writeFile(InputStream inputStream,String fileName)
-            throws IOException {
-        byte[] bytes = IOUtils.toByteArray(inputStream);
-        File customDir = new File(UPLOAD_DIR);
-	if (!customDir.exists()){
-		customDir.mkdirs();
-	}	
-        fileName = customDir.getAbsolutePath() +
-                File.separator + fileName;
-        Files.write(Paths.get(fileName), bytes,
-                StandardOpenOption.CREATE_NEW);
+        return result;
     }
 
     private String getFileName(MultivaluedMap<String, String> header) {

@@ -1,8 +1,13 @@
-В настоящий момент, довольно простой сервис который принимает файлы и сохраняет в `upload.directory` см `application.properties`
-
+Сервис принимает изображения и конвертирует их в zpl текст для печати на термопринтерах
 
 пример использования в postman 
-![](/Postman_example.png)
+![](/Postman_example_2.png)
 
 
-запуск mvn clean quarkus:dev -f pom.xml
+возможно использование со сжатием и без. see enum `CompressorType`
+
+
+запуск:
+```bash
+mvn clean quarkus:dev -f pom.xml
+```
